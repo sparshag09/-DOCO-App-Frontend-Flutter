@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'add_distributor_screen.dart';
+import 'distributor_profile_screen.dart';
+
 class DistributorsScreen extends StatefulWidget {
   const DistributorsScreen({super.key});
 
@@ -12,9 +15,30 @@ class _DistributorsScreenState extends State<DistributorsScreen> {
   final TextEditingController searchController = TextEditingController();
 
   List<Map<String, dynamic>> distributors = [
-    {"name": "Ramesh Traders", "pending": 4500, "orders": 12},
-    {"name": "Mahesh Wholesales", "pending": 1200, "orders": 4},
-    {"name": "CityMart Supplies", "pending": 7800, "orders": 18},
+    {
+      "business_name": "Ramesh Traders",
+      "owner": "Ramesh Patel",
+      "phone": "9876543210",
+      "credit_limit": 100000,
+      "pending": 4500,
+      "orders": 12
+    },
+    {
+      "business_name": "Mahesh Wholesales",
+      "owner": "Mahesh Shah",
+      "phone": "9123456780",
+      "credit_limit": 50000,
+      "pending": 1200,
+      "orders": 4
+    },
+    {
+      "business_name": "CityMart Supplies",
+      "owner": "Amit Verma",
+      "phone": "9988776655",
+      "credit_limit": 150000,
+      "pending": 7800,
+      "orders": 18
+    },
   ];
 
   List<Map<String, dynamic>> filtered = [];
@@ -29,41 +53,15 @@ class _DistributorsScreenState extends State<DistributorsScreen> {
     setState(() {
       filtered = distributors
           .where((d) =>
-          d["name"].toLowerCase().contains(value.toLowerCase()))
+          d["business_name"].toLowerCase().contains(value.toLowerCase()))
           .toList();
     });
   }
 
   void addDistributor() {
-    showDialog(
-      context: context,
-      builder: (_) {
-        final nameCtrl = TextEditingController();
-        return AlertDialog(
-          title: Text("Add Distributor", style: GoogleFonts.poppins()),
-          content: TextField(
-            controller: nameCtrl,
-            decoration: const InputDecoration(hintText: "Distributor name"),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  distributors.add({
-                    "name": nameCtrl.text,
-                    "pending": 0,
-                    "orders": 0,
-                  });
-                  filtered = distributors;
-                });
-                Navigator.pop(context);
-              },
-              child: const Text("Add"),
-            )
-          ],
-        );
-      },
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AddDistributorScreen()),
     );
   }
 
@@ -87,7 +85,7 @@ class _DistributorsScreenState extends State<DistributorsScreen> {
                   icon: const Icon(Icons.add),
                   label: const Text("Add New"),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6A5AE0)),
+                      backgroundColor: const Color(0xFF7163B4)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -116,39 +114,53 @@ class _DistributorsScreenState extends State<DistributorsScreen> {
               itemCount: filtered.length,
               itemBuilder: (context, index) {
                 final d = filtered[index];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, 10))
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(d["name"],
-                              style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600)),
-                          Text("Orders: ${d["orders"]}",
-                              style: GoogleFonts.poppins(color: Colors.grey)),
-                        ],
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DistributorProfileScreen(distributor: d),
                       ),
-                      Column(
-                        children: [
-                          Text("₹${d["pending"]}",
-                              style: GoogleFonts.poppins(
-                                  color: Colors.redAccent,
-                                  fontWeight: FontWeight.w600)),
-                          const Text("Pending"),
-                        ],
-                      )
-                    ],
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 20,
+                            offset: Offset(0, 10))
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(d["business_name"],
+                                style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600)),
+                            Text("Orders: ${d["orders"]}",
+                                style: GoogleFonts.poppins(color: Colors.grey)),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text("₹${d["pending"]}",
+                                style: GoogleFonts.poppins(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.w600)),
+                            const Text("Pending"),
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 );
               },
