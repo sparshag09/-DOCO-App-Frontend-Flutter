@@ -1,12 +1,55 @@
+import 'package:doco_store/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../dashboard/dashboard_screen.dart';
+ // your login API wrapper
 
-
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  final AuthService _authRepository = AuthService();
+
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  Future<void> _onSignIn() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final response = await _authRepository.login(
+      username: _usernameController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (response.success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const DashboardScreen(),
+        ),
+      );
+    } else {
+      setState(() {
+        _errorMessage = response.message ?? 'Invalid username or password';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +88,24 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                _inputField("Username"),
+                _inputField(
+                  "Username",
+                  controller: _usernameController,
+                ),
                 const SizedBox(height: 16),
-                _inputField("Password", isPassword: true),
+                _inputField(
+                  "Password",
+                  controller: _passwordController,
+                  isPassword: true,
+                ),
+
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ],
 
                 const SizedBox(height: 24),
 
@@ -59,15 +117,17 @@ class LoginScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DashboardScreen(),
-                      ),
-                    );
-                  },
-                  child: Text(
+                  onPressed: _isLoading ? null : _onSignIn,
+                  child: _isLoading
+                      ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                      : Text(
                     "Sign In",
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
@@ -83,8 +143,13 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _inputField(String hint, {bool isPassword = false}) {
+  Widget _inputField(
+      String hint, {
+        required TextEditingController controller,
+        bool isPassword = false,
+      }) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         hintText: hint,
